@@ -4,6 +4,7 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_DungeonGenerator.h"
 #include <QGraphicsScene>
+#include <QTime>
 
 typedef unsigned int uint;
 
@@ -61,6 +62,7 @@ private:
     // Mazes
     void GenMazeSnake();
     void GenMazeRecursiveBacktracking(uint pos_x, uint pos_y);
+    int CheckNeighbours(uint dir, uint x, uint y);
 
 private slots:
 

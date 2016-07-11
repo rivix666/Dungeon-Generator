@@ -17,6 +17,8 @@ DungeonGenerator::DungeonGenerator(QWidget *parent)
     InitConnections();
     InitMazeArray();
     InitDirectionArrays();
+
+    qsrand(QTime::currentTime().msec());
 }
 
 DungeonGenerator::~DungeonGenerator()
@@ -49,7 +51,7 @@ void DungeonGenerator::InitConnections()
 
     // Actions
     connect(m_ActGenSnake, &QAction::triggered, this, [=] { GenMazeSnake(); });
-    connect(m_ActGenRecBack, &QAction::triggered, this, [=] { GenMazeRecursiveBacktracking(20, 20); DrawMazeFromArray(); });
+    connect(m_ActGenRecBack, &QAction::triggered, this, [=] { ClearMazeArray(); GenMazeRecursiveBacktracking(1, 1); DrawMazeFromArray(); });
 }
 
 void DungeonGenerator::InitMazeArray()
@@ -73,7 +75,7 @@ void DungeonGenerator::InitDirectionArrays()
     m_DirYArr[N] = -1;
     m_DirYArr[E] = 0;
     m_DirYArr[S] = 1;
-    m_DirYArr[W] = -1;
+    m_DirYArr[W] = 0;
 
     m_DirOppositeArr[N] = S;
     m_DirOppositeArr[E] = W;
@@ -106,7 +108,7 @@ void DungeonGenerator::ShuffleDirArray(uint* arr, uint size)
 {
     for (int i = 0; i < (size - 1); i++)
     {
-        int r = i + (rand() % (size - i));
+        int r = i + (qrand() % (size - i));
         int temp = arr[i];
         arr[i] = arr[r];
         arr[r] = temp;
@@ -116,110 +118,6 @@ void DungeonGenerator::ShuffleDirArray(uint* arr, uint size)
 void DungeonGenerator::DrawMazeFromArray()
 {
     m_Scene->clear();
-
-//     QString str = " ";
-//     for (int x = 0; x < (MAX_WIDTH * 2); x++) 
-//     {
-//         str += "_";
-//     }
-//     str += "\n";
-// 
-//     for (int y = 0; y < MAX_HEIGHT; y++) 
-//     {
-//         str += "|";
-//         for (int x = 0; x < MAX_WIDTH; x++) 
-//         {
-//             str += (m_MazeArr[x][y] & S) != 0 ? " " : "_";
-//             if ((m_MazeArr[x][y] & E) != 0) 
-//             {
-//                 str += ((m_MazeArr[x][y] | m_MazeArr[x + 1][y]) & S) != 0 ? " " : "_";
-//             }
-//             else {
-//                 str += "|";
-//             }
-//         }
-//         str += "\n";
-//     }
-// 
-// 
-//     uint count = str.size();
-//     uint x = 0;
-//     uint y = 0;
-//     for (uint i = 0; i < count; i++)
-//     {
-//         if (str.at(i) == "\n")
-//         {
-//             y++;
-//             x = 0;
-//             continue;
-//         }
-// 
-//         if (str.at(i) == " ")
-//         {
-//             x++;
-//             continue;
-//         }
-// 
-//         QRect rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-//         m_Scene->addRect(rect, TILE_BORDERS, TILE_BASE);
-//         x++;
-//     }
-// 
-// 
-
-
-
-// 
-//     for (int y = 0; y < MAX_HEIGHT; y++)
-//     {
-//         uint offx = 0;
-//         for (int x = 0; x < MAX_WIDTH; x++)
-//         {
-// 
-//             if ((m_MazeArr[x][y] & S) != 0)
-//             {
-// 
-//             }
-//             else
-//             {
-//                 QRect rect((x - 1 + offx) * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-//                 m_Scene->addRect(rect, TILE_BORDERS, TILE_BASE);
-// 
-//                 QRect rect2((x + 1 + offx) * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-//                 m_Scene->addRect(rect, TILE_BORDERS, TILE_BASE);
-//             }
-// 
-//             if ((m_MazeArr[x][y] & E) != 0)
-//             {
-//                 if (((m_MazeArr[x][y] | m_MazeArr[x + 1][y]) & S) != 0)
-//                 {
-// 
-//                 }
-//             }
-//             else
-//             {
-// 
-//             }
-//         }
-//         offx++;
-// 
-//     }
-// 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
  #ifdef _DEBUG | DEBUG
      for (int i = 0; i < MAX_WIDTH; i++)
      {
@@ -292,56 +190,58 @@ void DungeonGenerator::GenMazeRecursiveBacktracking(uint pos_x, uint pos_y)
             nx = pos_x + m_DirXArr[dir];
             ny = pos_y + m_DirYArr[dir];
 
-            if (((nx < MAX_WIDTH) & (nx >= 0)) & ((ny < MAX_HEIGHT) & (ny >= 0)))
+            if (((nx < MAX_WIDTH - 1) & (nx >= 1)) & ((ny < MAX_HEIGHT - 1) & (ny >= 1)))
             {
-                
-                if (m_MazeArr[nx][ny] == 0)
-                {
-                    bool result = false;
-                    for (uint dir2 : directions)
-                    {
-//                         if (dir2 == m_DirOppositeArr[dir])
-//                             continue;
-
-                        uint nx2, ny2;
-
-                        nx2 = nx + m_DirXArr[dir2];
-                        ny2 = ny + m_DirYArr[dir2];
-
-                        if (((nx2 < MAX_WIDTH) & (nx2 >= 0)) & ((ny2 < MAX_HEIGHT) & (ny2 >= 0)))
-                            if (m_MazeArr[nx2][ny2] == 0)
-                                result = true;
-                    }
-
-                    if (result)
-                        m_MazeArr[nx][ny] = 1;
-                    else
-                        return;
-                }
+                 if (m_MazeArr[nx][ny] == 0)
+                 {
+                     if (CheckNeighbours(dir, nx, ny) > 2)
+                     {
+                         m_MazeArr[nx][ny] = 1;
+                         GenMazeRecursiveBacktracking(nx, ny);
+                     }
+                 }
             }
         }
     }
-
-
-
-//     for (uint dir : directions)
-//     {
-//         nx = pos_x + m_DirXArr[dir];
-//         ny = pos_y + m_DirYArr[dir];
-// 
-//         if (((nx < MAX_WIDTH) & (nx >= 0)) & ((ny < MAX_HEIGHT) & (ny >= 0)))
-//         {
-//             if (m_MazeArr[nx][ny] == 0)
-//             {
-//                 for (uint dir2 : directions)
-//                 {
-// 
-//                 }
-//             }
-//         }
-//     }
 }
 
+
+int DungeonGenerator::CheckNeighbours(uint dir, uint x, uint y)
+{
+    int walls = 0;
+    switch (dir)
+    {
+        case N:
+        {
+            if(m_MazeArr[x - 1][y] == 0)walls++;
+            if(m_MazeArr[x + 1][y] == 0)walls++;
+            if(m_MazeArr[x][y - 1] == 0)walls++;
+            break;
+        }
+        case S:
+        {
+            if(m_MazeArr[x - 1][y] == 0)walls++;
+            if(m_MazeArr[x + 1][y] == 0)walls++;
+            if(m_MazeArr[x][y + 1] == 0)walls++;
+            break;
+        }
+        case E:
+        {
+            if(m_MazeArr[x][y + 1] == 0)walls++;
+            if(m_MazeArr[x][y - 1] == 0)walls++;
+            if(m_MazeArr[x + 1][y] == 0)walls++;
+            break;
+        }
+        case W:
+        {
+            if(m_MazeArr[x][y + 1] == 0)walls++;
+            if(m_MazeArr[x][y - 1] == 0)walls++;
+            if(m_MazeArr[x - 1][y] == 0)walls++;
+            break;
+        }
+    }
+    return walls;
+}
 
 // Slots
 //////////////////////////////////////////////////////////////////////////

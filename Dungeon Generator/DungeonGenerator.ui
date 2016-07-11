@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>DungeonGenerator</string>
+   <string>Dungeon Generator</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="DungeonGenerator.qrc">
+    <normaloff>:/DungeonGenerator/Resources/maze.png</normaloff>:/DungeonGenerator/Resources/maze.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -69,6 +73,9 @@
          <iconset resource="DungeonGenerator.qrc">
           <normaloff>:/DungeonGenerator/Resources/magnifier_zoom_out.png</normaloff>:/DungeonGenerator/Resources/magnifier_zoom_out.png</iconset>
         </property>
+        <property name="shortcut">
+         <string>-</string>
+        </property>
         <property name="flat">
          <bool>true</bool>
         </property>
@@ -85,6 +92,9 @@
         <property name="icon">
          <iconset resource="DungeonGenerator.qrc">
           <normaloff>:/DungeonGenerator/Resources/magnifier_zoom_in.png</normaloff>:/DungeonGenerator/Resources/magnifier_zoom_in.png</iconset>
+        </property>
+        <property name="shortcut">
+         <string>+</string>
         </property>
         <property name="flat">
          <bool>true</bool>

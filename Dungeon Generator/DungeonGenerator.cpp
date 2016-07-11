@@ -4,6 +4,7 @@
 #include <QMenu>
 #include <QCursor>
 #include <QDebug>
+#include <QKeyEvent>
 
 DungeonGenerator::DungeonGenerator(QWidget *parent)
     : QMainWindow(parent), MAX_WIDTH(50),
@@ -19,6 +20,7 @@ DungeonGenerator::DungeonGenerator(QWidget *parent)
     InitDirectionArrays();
 
     qsrand(QTime::currentTime().msec());
+    ui.graphicsView->installEventFilter(this);
 }
 
 DungeonGenerator::~DungeonGenerator()
@@ -40,6 +42,9 @@ void DungeonGenerator::InitActions()
 {
     m_ActGenSnake = new QAction(tr("Generate Maze Snake"), this);
     m_ActGenRecBack = new QAction(tr("Generate Recursive Backtraced Maze"), this);
+
+    m_ActGenSnake->setShortcut(QKeySequence(Qt::Key_1));
+    m_ActGenRecBack->setShortcut(QKeySequence(Qt::Key_2));
 }
 
 void DungeonGenerator::InitConnections()
@@ -83,6 +88,8 @@ void DungeonGenerator::InitDirectionArrays()
     m_DirOppositeArr[W] = E;
 }
 
+// Others
+//////////////////////////////////////////////////////////////////////////
 void DungeonGenerator::ClearMazeArray()
 {
     for (int i = 0; i < MAX_WIDTH; i++)
@@ -194,7 +201,7 @@ void DungeonGenerator::GenMazeRecursiveBacktracking(uint pos_x, uint pos_y)
             {
                  if (m_MazeArr[nx][ny] == 0)
                  {
-                     if (CheckNeighbours(dir, nx, ny) > 2)
+                     if (CheckNeighbours(dir, nx, ny) > 4) // 2 with cross walls
                      {
                          m_MazeArr[nx][ny] = 1;
                          GenMazeRecursiveBacktracking(nx, ny);
@@ -216,6 +223,9 @@ int DungeonGenerator::CheckNeighbours(uint dir, uint x, uint y)
             if(m_MazeArr[x - 1][y] == 0)walls++;
             if(m_MazeArr[x + 1][y] == 0)walls++;
             if(m_MazeArr[x][y - 1] == 0)walls++;
+            if (m_MazeArr[x - 1][y - 1] == 0)walls++; // delete this two ever case to unlock cross walls
+            if (m_MazeArr[x + 1][y - 1] == 0)walls++;
+
             break;
         }
         case S:
@@ -223,6 +233,8 @@ int DungeonGenerator::CheckNeighbours(uint dir, uint x, uint y)
             if(m_MazeArr[x - 1][y] == 0)walls++;
             if(m_MazeArr[x + 1][y] == 0)walls++;
             if(m_MazeArr[x][y + 1] == 0)walls++;
+            if (m_MazeArr[x - 1][y + 1] == 0)walls++;
+            if (m_MazeArr[x + 1][y + 1] == 0)walls++;
             break;
         }
         case E:
@@ -230,6 +242,8 @@ int DungeonGenerator::CheckNeighbours(uint dir, uint x, uint y)
             if(m_MazeArr[x][y + 1] == 0)walls++;
             if(m_MazeArr[x][y - 1] == 0)walls++;
             if(m_MazeArr[x + 1][y] == 0)walls++;
+            if (m_MazeArr[x + 1][y + 1] == 0)walls++;
+            if (m_MazeArr[x + 1][y - 1] == 0)walls++;
             break;
         }
         case W:
@@ -237,15 +251,42 @@ int DungeonGenerator::CheckNeighbours(uint dir, uint x, uint y)
             if(m_MazeArr[x][y + 1] == 0)walls++;
             if(m_MazeArr[x][y - 1] == 0)walls++;
             if(m_MazeArr[x - 1][y] == 0)walls++;
+            if (m_MazeArr[x - 1][y + 1] == 0)walls++;
+            if (m_MazeArr[x - 1][y - 1] == 0)walls++;
             break;
         }
     }
     return walls;
 }
 
+// Events
+//////////////////////////////////////////////////////////////////////////
+bool DungeonGenerator::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui.graphicsView)
+    {
+        if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent* evt = static_cast<QKeyEvent*>(event);
+
+            switch (evt->key())
+            {
+            case Qt::Key_1:
+                m_ActGenSnake->triggered();
+                return true;
+
+            case Qt::Key_2:
+                m_ActGenRecBack->triggered();
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 // Slots
 //////////////////////////////////////////////////////////////////////////
-
 // Others
 void DungeonGenerator::OnBtnNewClicked()
 {

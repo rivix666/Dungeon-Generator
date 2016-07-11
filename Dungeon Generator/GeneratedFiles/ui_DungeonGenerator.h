@@ -41,6 +41,9 @@ public:
         if (DungeonGeneratorClass->objectName().isEmpty())
             DungeonGeneratorClass->setObjectName(QStringLiteral("DungeonGeneratorClass"));
         DungeonGeneratorClass->resize(600, 400);
+        QIcon icon;
+        icon.addFile(QStringLiteral(":/DungeonGenerator/Resources/maze.png"), QSize(), QIcon::Normal, QIcon::Off);
+        DungeonGeneratorClass->setWindowIcon(icon);
         centralWidget = new QWidget(DungeonGeneratorClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         verticalLayout = new QVBoxLayout(centralWidget);
@@ -63,27 +66,25 @@ public:
 
         pushButton_zoomOut = new QPushButton(centralWidget);
         pushButton_zoomOut->setObjectName(QStringLiteral("pushButton_zoomOut"));
-        QIcon icon;
-        icon.addFile(QStringLiteral(":/DungeonGenerator/Resources/magnifier_zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
-        pushButton_zoomOut->setIcon(icon);
+        QIcon icon1;
+        icon1.addFile(QStringLiteral(":/DungeonGenerator/Resources/magnifier_zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
+        pushButton_zoomOut->setIcon(icon1);
         pushButton_zoomOut->setFlat(true);
 
         horizontalLayout->addWidget(pushButton_zoomOut);
 
         pushButton_zoomIn = new QPushButton(centralWidget);
         pushButton_zoomIn->setObjectName(QStringLiteral("pushButton_zoomIn"));
-        QIcon icon1;
-        icon1.addFile(QStringLiteral(":/DungeonGenerator/Resources/magnifier_zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
-        pushButton_zoomIn->setIcon(icon1);
+        QIcon icon2;
+        icon2.addFile(QStringLiteral(":/DungeonGenerator/Resources/magnifier_zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
+        pushButton_zoomIn->setIcon(icon2);
         pushButton_zoomIn->setFlat(true);
 
         horizontalLayout->addWidget(pushButton_zoomIn);
 
         pushButton_New = new QPushButton(centralWidget);
         pushButton_New->setObjectName(QStringLiteral("pushButton_New"));
-        QIcon icon2;
-        icon2.addFile(QStringLiteral(":/DungeonGenerator/Resources/maze.png"), QSize(), QIcon::Normal, QIcon::Off);
-        pushButton_New->setIcon(icon2);
+        pushButton_New->setIcon(icon);
         pushButton_New->setFlat(true);
 
         horizontalLayout->addWidget(pushButton_New);
@@ -100,15 +101,17 @@ public:
 
     void retranslateUi(QMainWindow *DungeonGeneratorClass)
     {
-        DungeonGeneratorClass->setWindowTitle(QApplication::translate("DungeonGeneratorClass", "DungeonGenerator", 0));
+        DungeonGeneratorClass->setWindowTitle(QApplication::translate("DungeonGeneratorClass", "Dungeon Generator", 0));
 #ifndef QT_NO_TOOLTIP
         pushButton_zoomOut->setToolTip(QApplication::translate("DungeonGeneratorClass", "Zoom Out", 0));
 #endif // QT_NO_TOOLTIP
         pushButton_zoomOut->setText(QString());
+        pushButton_zoomOut->setShortcut(QApplication::translate("DungeonGeneratorClass", "-", 0));
 #ifndef QT_NO_TOOLTIP
         pushButton_zoomIn->setToolTip(QApplication::translate("DungeonGeneratorClass", "Zoom In", 0));
 #endif // QT_NO_TOOLTIP
         pushButton_zoomIn->setText(QString());
+        pushButton_zoomIn->setShortcut(QApplication::translate("DungeonGeneratorClass", "+", 0));
 #ifndef QT_NO_TOOLTIP
         pushButton_New->setToolTip(QApplication::translate("DungeonGeneratorClass", "Generate Maze", 0));
 #endif // QT_NO_TOOLTIP

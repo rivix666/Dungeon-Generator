@@ -1,6 +1,4 @@
-#ifndef DUNGEONGENERATOR_H
-#define DUNGEONGENERATOR_H
-
+#pragma once
 #include <QtWidgets/QMainWindow>
 #include "ui_DungeonGenerator.h"
 #include <QGraphicsScene>
@@ -25,16 +23,18 @@ public:
     ~DungeonGenerator();
 
 protected:
-    void InitGraphicsScene();
-    void InitActions();
-    void InitConnections();
-    void InitMazeArray();
-    void InitDirectionArrays();
+    void    InitGraphicsScene();
+    void    InitActions();
+    void    InitConnections();
+    void    InitMazeArray();
+    void    InitDirectionArrays();
 
-    void ClearMazeArray();
-    void DestroyMazeArray();
-    void ShuffleDirArray(uint* arr, uint size);
-    void DrawMazeFromArray();
+    void    ClearMazeArray();
+    void    DestroyMazeArray();
+    void    ShuffleDirArray(uint* arr, uint size);
+    void    DrawMazeFromArray();
+
+    virtual bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     Ui::DungeonGeneratorClass   ui;
@@ -60,18 +60,16 @@ private:
     const float                 SCALE_ZOOM_OUT;
 
     // Mazes
-    void GenMazeSnake();
-    void GenMazeRecursiveBacktracking(uint pos_x, uint pos_y);
-    int CheckNeighbours(uint dir, uint x, uint y);
+    void    GenMazeSnake();
+    void    GenMazeRecursiveBacktracking(uint pos_x, uint pos_y);
+    int     CheckNeighbours(uint dir, uint x, uint y);
 
 private slots:
 
 
     // Others
-    void OnBtnNewClicked();
-    void OnBtnZoomIn();
-    void OnBtnZoomOut();
+    void    OnBtnNewClicked();
+    void    OnBtnZoomIn();
+    void    OnBtnZoomOut();
 
 };
-
-#endif // DUNGEONGENERATOR_H

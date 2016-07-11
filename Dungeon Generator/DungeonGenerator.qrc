@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/DungeonGenerator">
+        <file>Resources/magnifier_zoom_in.png</file>
+        <file>Resources/magnifier_zoom_out.png</file>
+        <file>Resources/maze.png</file>
+    </qresource>
+</RCC>

@@ -62,6 +62,13 @@
        </spacer>
       </item>
       <item>
+       <widget class="QCheckBox" name="checkBox_debug">
+        <property name="text">
+         <string>Debug</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButton_zoomOut">
         <property name="toolTip">
          <string>Zoom Out</string>

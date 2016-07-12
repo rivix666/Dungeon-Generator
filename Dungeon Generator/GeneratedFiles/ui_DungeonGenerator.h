@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
@@ -32,6 +33,7 @@ public:
     QGraphicsView *graphicsView;
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
+    QCheckBox *checkBox_debug;
     QPushButton *pushButton_zoomOut;
     QPushButton *pushButton_zoomIn;
     QPushButton *pushButton_New;
@@ -64,6 +66,11 @@ public:
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout->addItem(horizontalSpacer);
+
+        checkBox_debug = new QCheckBox(centralWidget);
+        checkBox_debug->setObjectName(QStringLiteral("checkBox_debug"));
+
+        horizontalLayout->addWidget(checkBox_debug);
 
         pushButton_zoomOut = new QPushButton(centralWidget);
         pushButton_zoomOut->setObjectName(QStringLiteral("pushButton_zoomOut"));
@@ -112,6 +119,7 @@ public:
     void retranslateUi(QMainWindow *DungeonGeneratorClass)
     {
         DungeonGeneratorClass->setWindowTitle(QApplication::translate("DungeonGeneratorClass", "Dungeon Generator", 0));
+        checkBox_debug->setText(QApplication::translate("DungeonGeneratorClass", "Debug", 0));
 #ifndef QT_NO_TOOLTIP
         pushButton_zoomOut->setToolTip(QApplication::translate("DungeonGeneratorClass", "Zoom Out", 0));
 #endif // QT_NO_TOOLTIP

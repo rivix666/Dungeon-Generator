@@ -3,6 +3,7 @@
 #include "ui_DungeonGenerator.h"
 #include <QGraphicsScene>
 #include <QTime>
+#include <vector>
 
 typedef unsigned int uint;
 
@@ -16,6 +17,26 @@ private:
         S = 2,
         E = 4,
         W = 8
+    };
+
+    enum ETileType
+    {
+        SolidRock = 0,
+        Room,
+        Corridor
+    };
+
+    struct SRoom
+    {
+        uint PosX;
+        uint PosY;
+        uint SizeX;
+        uint SizeY;
+
+        SRoom() : PosX(0), PosY(0), SizeX(0), SizeY(0) {}
+        SRoom(uint x, uint y, uint size_x, uint size_y) :
+            PosX(x), PosY(y), SizeX(size_x), SizeY(size_y) {}
+        ~SRoom() {}
     };
 
 public:
@@ -32,7 +53,7 @@ protected:
     void                        ClearMazeArray();
     void                        DestroyMazeArray();
     void                        ShuffleDirArray(uint* arr, uint size);
-    void                        DrawMazeFromArray();
+    void                        DrawMazeFromArray(bool clear = true);
 
     virtual bool                eventFilter(QObject *watched, QEvent *event) override;
 
@@ -47,6 +68,8 @@ private:
     uint                        m_DirXArr[9];
     uint                        m_DirYArr[9];
     uint                        m_DirOppositeArr[9];
+
+    std::vector <SRoom>         m_RoomsVec;
 
     const uint                  TILE_SIZE;
     const uint                  MAX_WIDTH;
@@ -64,9 +87,12 @@ private:
     void                        GenMazeSnake();
     void                        GenMazeRecursiveBacktracking(uint pos_x, uint pos_y);
     int                         CheckNeighbours(uint dir, uint x, uint y);
+    int                         CheckNeighbours(uint x, uint y);
     void                        GenRooms(int attempts);
     bool                        AreFieldsEmpty(uint x, uint y, uint size_x, uint size_y);
-    void                        TakeFields(uint x, uint y, uint size_x, uint size_y);
+    void                        CarveRoom(uint x, uint y, uint size_x, uint size_y);
+    void                        CarveCorridorsBetweenRooms(uint attempts = 0); // with attempts == 0, slow but check every possibility, with attempts > 0 faster but may result with empty spaces
+    void                        ConnectRooms(int root = -1); // -1 mean that it will be randomly draw from m_RoomsVec
 
 private slots:
 

@@ -9,8 +9,8 @@
 #include <QShortcut>
 
 DungeonGenerator::DungeonGenerator(QWidget *parent)
-    : QMainWindow(parent), MAX_WIDTH(50),
-    MAX_HEIGHT(50), TILE_SIZE(15), TILE_BASE_COLOR("#BDB8AE"),
+    : QMainWindow(parent), m_MaxWidth(50),
+    m_MaxHeight(50), TILE_SIZE(15), TILE_BASE_COLOR("#BDB8AE"),
     TILE_BORDERS_COLOR("#949188"), TILE_BORDERS(QBrush(TILE_BORDERS_COLOR), 2),
     TILE_BASE(TILE_BASE_COLOR), SCALE_ZOOM_IN(1.1f), SCALE_ZOOM_OUT(0.9f),
     m_GenDungeonSC(new QShortcut(QKeySequence(Qt::Key_Return), this))
@@ -21,6 +21,7 @@ DungeonGenerator::DungeonGenerator(QWidget *parent)
     InitConnections();
     InitMazeArray();
     InitDirectionArrays();
+    InitDebugCombo();
 
     qsrand(QTime::currentTime().msec());
     ui.graphicsView->installEventFilter(this);
@@ -52,12 +53,24 @@ void DungeonGenerator::InitActions()
 
 void DungeonGenerator::InitConnections()
 {
-    // Others
+    // PushButtons
     connect(ui.pushButton_New, &QPushButton::clicked, this, &DungeonGenerator::OnBtnNewClicked);
     connect(ui.pushButton_zoomIn, &QPushButton::clicked, this, &DungeonGenerator::OnBtnZoomIn);
     connect(ui.pushButton_zoomOut, &QPushButton::clicked, this, &DungeonGenerator::OnBtnZoomOut);
     connect(ui.pushButton_Dungeon, &QPushButton::clicked, this, &DungeonGenerator::OnBtnDungeonGenerate);
+
+    // Shortcuts
     connect(m_GenDungeonSC, &QShortcut::activated, this, &DungeonGenerator::OnBtnDungeonGenerate);
+
+    // CheckBoxes
+    connect(ui.checkBox_debug, &QCheckBox::toggled, this, &DungeonGenerator::OnDebugCheckBoxToggled);
+
+    // ComboBoxes
+    connect(ui.comboBox_debug, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &DungeonGenerator::OnDebugComboIndexChanged);
+
+    // SpinBoxes
+    connect(ui.spinBox_width , static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DungeonGenerator::OnSpinBoxesSizeValueChanged);
+    connect(ui.spinBox_height, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &DungeonGenerator::OnSpinBoxesSizeValueChanged);
 
     // Actions
     connect(m_ActGenSnake, &QAction::triggered, this, [=] { GenMazeSnake(); });
@@ -66,10 +79,10 @@ void DungeonGenerator::InitConnections()
 
 void DungeonGenerator::InitMazeArray()
 {
-    m_MazeArr = new uint*[MAX_WIDTH];
-    for (int i = 0; i < MAX_WIDTH; i++)
+    m_MazeArr = new uint*[m_MaxWidth];
+    for (int i = 0; i < m_MaxWidth; i++)
     {
-        m_MazeArr[i] = new uint[MAX_HEIGHT];
+        m_MazeArr[i] = new uint[m_MaxHeight];
     }
 
     ClearMazeArray();
@@ -93,13 +106,21 @@ void DungeonGenerator::InitDirectionArrays()
     m_DirOppositeArr[W] = E;
 }
 
+void DungeonGenerator::InitDebugCombo()
+{
+    ui.comboBox_debug->addItem("Nothing");
+    ui.comboBox_debug->addItem("SolidRock");
+    ui.comboBox_debug->addItem("Room");
+    ui.comboBox_debug->addItem("Corridor");
+}
+
 // Others
 //////////////////////////////////////////////////////////////////////////
 void DungeonGenerator::ClearMazeArray()
 {
-    for (int i = 0; i < MAX_WIDTH; i++)
+    for (int i = 0; i < m_MaxWidth; i++)
     {
-        for (int j = 0; j < MAX_HEIGHT; j++)
+        for (int j = 0; j < m_MaxHeight; j++)
         {
             m_MazeArr[i][j] = SolidRock;
         }
@@ -110,7 +131,7 @@ void DungeonGenerator::ClearMazeArray()
 
 void DungeonGenerator::DestroyMazeArray()
 {
-    for (int i = 0; i < MAX_WIDTH; i++)
+    for (int i = 0; i < m_MaxWidth; i++)
     {
         delete[] m_MazeArr[i];
     }
@@ -134,10 +155,10 @@ void DungeonGenerator::DrawMazeFromArray(bool clear /*=true*/)
     if(clear)
         m_Scene->clear();
  #ifdef _DEBUG | DEBUG
-     for (int i = 0; i < MAX_WIDTH; i++)
+     for (int i = 0; i < m_MaxWidth; i++)
      {
          QString str = "";
-         for (int j = 0; j < MAX_HEIGHT; j++)
+         for (int j = 0; j < m_MaxHeight; j++)
          {
              str += QString::number(m_MazeArr[i][j]);
              if (m_MazeArr[i][j] == SolidRock)
@@ -149,9 +170,9 @@ void DungeonGenerator::DrawMazeFromArray(bool clear /*=true*/)
          qDebug() << str;
      }
  #else
-     for (int i = 0; i < MAX_WIDTH; i++)
+     for (int i = 0; i < m_MaxWidth; i++)
      {
-         for (int j = 0; j < MAX_HEIGHT; j++)
+         for (int j = 0; j < m_MaxHeight; j++)
          {
              if (m_MazeArr[i][j] == SolidRock)
              {
@@ -163,11 +184,29 @@ void DungeonGenerator::DrawMazeFromArray(bool clear /*=true*/)
  #endif
 }
 
+void DungeonGenerator::DrawDebug(int type)
+{
+    if (ui.checkBox_debug->isChecked())
+    {
+        for (int i = 0; i < m_MaxWidth; i++)
+        {
+            for (int j = 0; j < m_MaxHeight; j++)
+            {
+                if (m_MazeArr[i][j] == type)
+                {
+                    QRect rect(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    m_Scene->addRect(rect, TILE_BORDERS, QBrush(QColor(Qt::red)));
+                }
+            }
+        }
+    }
+}
+
 // Mazes
 void DungeonGenerator::GenMazeSnake()
 {
-    int tiles_per_x = MAX_WIDTH;
-    int tiles_per_y = MAX_HEIGHT;
+    int tiles_per_x = m_MaxWidth;
+    int tiles_per_y = m_MaxHeight;
     int x_offset = 0;
     int y_offset = 0;
 
@@ -205,7 +244,7 @@ void DungeonGenerator::GenMazeRecursiveBacktracking(uint pos_x, uint pos_y)
             nx = pos_x + m_DirXArr[dir];
             ny = pos_y + m_DirYArr[dir];
 
-            if (((nx < MAX_WIDTH - 1) & (nx >= 1)) & ((ny < MAX_HEIGHT - 1) & (ny >= 1)))
+            if (((nx < m_MaxWidth - 1) & (nx >= 1)) & ((ny < m_MaxHeight - 1) & (ny >= 1)))
             {
                  if (m_MazeArr[nx][ny] == SolidRock)
                  {
@@ -294,8 +333,8 @@ void DungeonGenerator::GenRooms(int attempts)
             size_x = (qrand() % (size_y / 2)) + 5;            
         }
 
-        nx = (qrand() % (MAX_WIDTH - size_x - 1)) + 1;
-        ny = (qrand() % (MAX_HEIGHT - size_y - 1)) + 1;
+        nx = (qrand() % (m_MaxWidth - size_x - 1)) + 1;
+        ny = (qrand() % (m_MaxHeight - size_y - 1)) + 1;
 
         if (AreFieldsEmpty(nx, ny, size_x, size_y))
         {
@@ -330,12 +369,10 @@ void DungeonGenerator::CarveRoom(uint x, uint y, uint size_x, uint size_y)
         for (int j = 0; j < size_y; j++)
         {
             m_MazeArr[x + i][y + j] = Room;
-            QRect rect((x+i) * TILE_SIZE, (y+j) * TILE_SIZE, TILE_SIZE, TILE_SIZE); //todo debug
-            m_Scene->addRect(rect, TILE_BORDERS, QBrush(QColor(Qt::red)));
         }
     }
 
-    m_RoomsVec.push_back(SRoom(y, x, size_x, size_y)); //todo obadac czemu miesza
+    m_RoomsVec.push_back(SRoom(x, y, size_x, size_y)); //todo obadac czemu miesza
 }
 
 void DungeonGenerator::CarveCorridorsBetweenRooms(uint attempts)
@@ -345,16 +382,16 @@ void DungeonGenerator::CarveCorridorsBetweenRooms(uint attempts)
         uint nx, ny;
         for (uint i = 0; i < attempts; i++)
         {
-            nx = (qrand() % MAX_WIDTH - 1) + 1;
-            ny = (qrand() % MAX_HEIGHT - 1) + 1;
+            nx = (qrand() % m_MaxWidth - 1) + 1;
+            ny = (qrand() % m_MaxHeight - 1) + 1;
             GenMazeRecursiveBacktracking(nx, ny);
         }
     }
     else
     {
-        for (uint i = 1; i < MAX_WIDTH - 1; i += 2)
+        for (uint i = 1; i < m_MaxWidth - 1; i += 2)
         {
-            for (uint j = 1; j < MAX_HEIGHT - 1; j += 2)
+            for (uint j = 1; j < m_MaxHeight - 1; j += 2)
             {
                 if (CheckNeighbours(i, j) > 2)
                 {
@@ -391,7 +428,7 @@ void DungeonGenerator::ConnectRooms(int root /*= -1*/)
                 nx = (qrand() % root_room.SizeX) + root_room.PosX - 1;
                 ny = root_room.PosY - 1;
 
-                if (nx < 2 || nx > MAX_WIDTH - 2 || ny < 2 || ny > MAX_HEIGHT - 2)
+                if (nx < 2 || nx > m_MaxWidth - 2 || ny < 2 || ny > m_MaxHeight - 2)
                     continue;
 
                 if (CheckNeighbours(nx, ny) < 3)
@@ -406,7 +443,7 @@ void DungeonGenerator::ConnectRooms(int root /*= -1*/)
                 nx = (qrand() % root_room.SizeX) + root_room.PosX - 1;
                 ny = root_room.PosY + root_room.SizeY;
 
-                if (nx < 2 || nx > MAX_WIDTH - 2 || ny < 2 || ny > MAX_HEIGHT - 2)
+                if (nx < 2 || nx > m_MaxWidth - 2 || ny < 2 || ny > m_MaxHeight - 2)
                     continue;
 
                 if (CheckNeighbours(nx, ny) < 3)
@@ -425,7 +462,7 @@ void DungeonGenerator::ConnectRooms(int root /*= -1*/)
                 nx = root_room.PosX - 1;
                 ny = (qrand() % root_room.SizeY) + root_room.PosY - 1;
 
-                if (nx < 2 || nx > MAX_WIDTH - 2 || ny < 2 || ny > MAX_HEIGHT - 2)
+                if (nx < 2 || nx > m_MaxWidth - 2 || ny < 2 || ny > m_MaxHeight - 2)
                     continue;
 
                 if (CheckNeighbours(nx, ny) < 3)
@@ -440,7 +477,7 @@ void DungeonGenerator::ConnectRooms(int root /*= -1*/)
                 nx = root_room.PosX + root_room.SizeX;
                 ny = (qrand() % root_room.SizeY) + root_room.PosY;
 
-                if (nx < 2 || nx > MAX_WIDTH - 2 || ny < 2 || ny > MAX_HEIGHT - 2)
+                if (nx < 2 || nx > m_MaxWidth - 2 || ny < 2 || ny > m_MaxHeight - 2)
                     continue;
 
                 if (CheckNeighbours(nx, ny) < 3)
@@ -484,7 +521,6 @@ bool DungeonGenerator::eventFilter(QObject *watched, QEvent *event)
 // Others
 void DungeonGenerator::OnBtnNewClicked()
 {
-    m_Scene->clear();//todo wywalic, przemyselc bo narazie pseudo debug
     QMenu menu(this);
     menu.addAction(m_ActGenSnake);
     menu.addAction(m_ActGenRecBack);
@@ -503,7 +539,6 @@ void DungeonGenerator::OnBtnZoomOut()
 
 void DungeonGenerator::OnBtnDungeonGenerate()
 {
-    m_Scene->clear();//todo wywalic, przemyselc bo narazie pseudo debug
     bool result = false;
     int seed = QInputDialog::getInt(this, tr("Question?"), tr("How many attempts?"), 50, 1, 2147483647, 1, &result);
 
@@ -514,5 +549,42 @@ void DungeonGenerator::OnBtnDungeonGenerate()
         CarveCorridorsBetweenRooms(0);
         ConnectRooms();
         DrawMazeFromArray(!ui.checkBox_debug->isChecked());
+        DrawDebug(ui.comboBox_debug->currentIndex());
     }
+}
+
+void DungeonGenerator::OnDebugCheckBoxToggled(bool toggled)
+{
+    if (toggled && ui.comboBox_debug->currentIndex() != 0)
+    {
+        DrawDebug(ui.comboBox_debug->currentIndex() - 1);
+    }
+    else
+    {
+        DrawMazeFromArray();
+    }
+}
+
+void DungeonGenerator::OnDebugComboIndexChanged(int index)
+{
+    if (ui.checkBox_debug->isChecked() && ui.comboBox_debug->currentIndex() != 0)
+    {
+        DrawMazeFromArray();
+        DrawDebug(index - 1);
+    }
+    else if(ui.comboBox_debug->currentIndex() == 0)
+    {
+        DrawMazeFromArray();
+    }
+}
+
+void DungeonGenerator::OnSpinBoxesSizeValueChanged(int i)
+{
+    DestroyMazeArray();
+
+    m_MaxWidth = ui.spinBox_width->value();
+    m_MaxHeight = ui.spinBox_height->value();
+
+    InitMazeArray();
+    m_Scene->clear();
 }

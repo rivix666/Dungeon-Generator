@@ -23,7 +23,7 @@ private:
     {
         SolidRock = 0,
         Room,
-        Corridor
+        Corridor,
     };
 
     struct SRoom
@@ -40,6 +40,11 @@ private:
     };
 
 public:
+
+    /*
+        TODO: Zobaczyæ co jest nie tak ze wspolrzednymi bo dziwnie dzialaja raz tak raz tak, mozliwe ze sa pomieszane gdzies.
+    */
+
     DungeonGenerator(QWidget *parent = 0);
     ~DungeonGenerator();
 
@@ -49,11 +54,13 @@ protected:
     void                        InitConnections();
     void                        InitMazeArray();
     void                        InitDirectionArrays();
+    void                        InitDebugCombo();
 
     void                        ClearMazeArray();
     void                        DestroyMazeArray();
     void                        ShuffleDirArray(uint* arr, uint size);
     void                        DrawMazeFromArray(bool clear = true);
+    void                        DrawDebug(int type);
 
     virtual bool                eventFilter(QObject *watched, QEvent *event) override;
 
@@ -71,10 +78,10 @@ private:
 
     std::vector <SRoom>         m_RoomsVec;
 
-    const uint                  TILE_SIZE;
-    const uint                  MAX_WIDTH;
-    const uint                  MAX_HEIGHT;
+    uint                        m_MaxWidth;
+    uint                        m_MaxHeight;
 
+    const uint                  TILE_SIZE;
     const QColor                TILE_BASE_COLOR;
     const QColor                TILE_BORDERS_COLOR;
     const QPen                  TILE_BORDERS;
@@ -96,10 +103,19 @@ private:
 
 private slots:
 
-    // Others
+    // PushButtons
     void                        OnBtnNewClicked();
     void                        OnBtnZoomIn();
     void                        OnBtnZoomOut();
     void                        OnBtnDungeonGenerate();
+
+    // CheckBoxes
+    void                        OnDebugCheckBoxToggled(bool toggled);
+
+    // ComboBoxes
+    void                        OnDebugComboIndexChanged(int index);
+
+    // SpinBoxes
+    void                        OnSpinBoxesSizeValueChanged(int i);
 
 };

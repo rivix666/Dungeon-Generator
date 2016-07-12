@@ -14,12 +14,15 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QFrame>
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -33,7 +36,13 @@ public:
     QGraphicsView *graphicsView;
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
+    QFrame *line_2;
     QCheckBox *checkBox_debug;
+    QComboBox *comboBox_debug;
+    QFrame *line_3;
+    QSpinBox *spinBox_width;
+    QSpinBox *spinBox_height;
+    QFrame *line;
     QPushButton *pushButton_zoomOut;
     QPushButton *pushButton_zoomIn;
     QPushButton *pushButton_New;
@@ -67,10 +76,50 @@ public:
 
         horizontalLayout->addItem(horizontalSpacer);
 
+        line_2 = new QFrame(centralWidget);
+        line_2->setObjectName(QStringLiteral("line_2"));
+        line_2->setFrameShape(QFrame::VLine);
+        line_2->setFrameShadow(QFrame::Sunken);
+
+        horizontalLayout->addWidget(line_2);
+
         checkBox_debug = new QCheckBox(centralWidget);
         checkBox_debug->setObjectName(QStringLiteral("checkBox_debug"));
 
         horizontalLayout->addWidget(checkBox_debug);
+
+        comboBox_debug = new QComboBox(centralWidget);
+        comboBox_debug->setObjectName(QStringLiteral("comboBox_debug"));
+
+        horizontalLayout->addWidget(comboBox_debug);
+
+        line_3 = new QFrame(centralWidget);
+        line_3->setObjectName(QStringLiteral("line_3"));
+        line_3->setFrameShape(QFrame::VLine);
+        line_3->setFrameShadow(QFrame::Sunken);
+
+        horizontalLayout->addWidget(line_3);
+
+        spinBox_width = new QSpinBox(centralWidget);
+        spinBox_width->setObjectName(QStringLiteral("spinBox_width"));
+        spinBox_width->setMaximum(500);
+        spinBox_width->setValue(50);
+
+        horizontalLayout->addWidget(spinBox_width);
+
+        spinBox_height = new QSpinBox(centralWidget);
+        spinBox_height->setObjectName(QStringLiteral("spinBox_height"));
+        spinBox_height->setMaximum(500);
+        spinBox_height->setValue(50);
+
+        horizontalLayout->addWidget(spinBox_height);
+
+        line = new QFrame(centralWidget);
+        line->setObjectName(QStringLiteral("line"));
+        line->setFrameShape(QFrame::VLine);
+        line->setFrameShadow(QFrame::Sunken);
+
+        horizontalLayout->addWidget(line);
 
         pushButton_zoomOut = new QPushButton(centralWidget);
         pushButton_zoomOut->setObjectName(QStringLiteral("pushButton_zoomOut"));
@@ -120,6 +169,14 @@ public:
     {
         DungeonGeneratorClass->setWindowTitle(QApplication::translate("DungeonGeneratorClass", "Dungeon Generator", 0));
         checkBox_debug->setText(QApplication::translate("DungeonGeneratorClass", "Debug", 0));
+#ifndef QT_NO_TOOLTIP
+        spinBox_width->setToolTip(QApplication::translate("DungeonGeneratorClass", "Dungeon Width (WARNING: Values bigger than 200 may result in stack overflow!)", 0));
+#endif // QT_NO_TOOLTIP
+        spinBox_width->setPrefix(QApplication::translate("DungeonGeneratorClass", "w = ", 0));
+#ifndef QT_NO_TOOLTIP
+        spinBox_height->setToolTip(QApplication::translate("DungeonGeneratorClass", "Dungeon Height (WARNING: Values bigger than 200 may result in stack overflow!)", 0));
+#endif // QT_NO_TOOLTIP
+        spinBox_height->setPrefix(QApplication::translate("DungeonGeneratorClass", "h = ", 0));
 #ifndef QT_NO_TOOLTIP
         pushButton_zoomOut->setToolTip(QApplication::translate("DungeonGeneratorClass", "Zoom Out", 0));
 #endif // QT_NO_TOOLTIP

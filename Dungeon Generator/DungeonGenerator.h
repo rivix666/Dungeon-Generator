@@ -23,24 +23,25 @@ public:
     ~DungeonGenerator();
 
 protected:
-    void    InitGraphicsScene();
-    void    InitActions();
-    void    InitConnections();
-    void    InitMazeArray();
-    void    InitDirectionArrays();
+    void                        InitGraphicsScene();
+    void                        InitActions();
+    void                        InitConnections();
+    void                        InitMazeArray();
+    void                        InitDirectionArrays();
 
-    void    ClearMazeArray();
-    void    DestroyMazeArray();
-    void    ShuffleDirArray(uint* arr, uint size);
-    void    DrawMazeFromArray();
+    void                        ClearMazeArray();
+    void                        DestroyMazeArray();
+    void                        ShuffleDirArray(uint* arr, uint size);
+    void                        DrawMazeFromArray();
 
-    virtual bool eventFilter(QObject *watched, QEvent *event) override;
+    virtual bool                eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     Ui::DungeonGeneratorClass   ui;
     QGraphicsScene*             m_Scene;
     QAction*                    m_ActGenSnake;
     QAction*                    m_ActGenRecBack;
+    QShortcut*                  m_GenDungeonSC;
 
     uint**                      m_MazeArr;
     uint                        m_DirXArr[9];
@@ -60,16 +61,19 @@ private:
     const float                 SCALE_ZOOM_OUT;
 
     // Mazes
-    void    GenMazeSnake();
-    void    GenMazeRecursiveBacktracking(uint pos_x, uint pos_y);
-    int     CheckNeighbours(uint dir, uint x, uint y);
+    void                        GenMazeSnake();
+    void                        GenMazeRecursiveBacktracking(uint pos_x, uint pos_y);
+    int                         CheckNeighbours(uint dir, uint x, uint y);
+    void                        GenRooms(int attempts);
+    bool                        AreFieldsEmpty(uint x, uint y, uint size_x, uint size_y);
+    void                        TakeFields(uint x, uint y, uint size_x, uint size_y);
 
 private slots:
 
-
     // Others
-    void    OnBtnNewClicked();
-    void    OnBtnZoomIn();
-    void    OnBtnZoomOut();
+    void                        OnBtnNewClicked();
+    void                        OnBtnZoomIn();
+    void                        OnBtnZoomOut();
+    void                        OnBtnDungeonGenerate();
 
 };

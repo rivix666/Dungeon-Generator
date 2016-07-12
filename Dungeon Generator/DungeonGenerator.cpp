@@ -5,12 +5,15 @@
 #include <QCursor>
 #include <QDebug>
 #include <QKeyEvent>
+#include <QInputDialog>
+#include <QShortcut>
 
 DungeonGenerator::DungeonGenerator(QWidget *parent)
     : QMainWindow(parent), MAX_WIDTH(50),
     MAX_HEIGHT(50), TILE_SIZE(15), TILE_BASE_COLOR("#BDB8AE"),
     TILE_BORDERS_COLOR("#949188"), TILE_BORDERS(QBrush(TILE_BORDERS_COLOR), 2),
-    TILE_BASE(TILE_BASE_COLOR), SCALE_ZOOM_IN(1.1f), SCALE_ZOOM_OUT(0.9f)
+    TILE_BASE(TILE_BASE_COLOR), SCALE_ZOOM_IN(1.1f), SCALE_ZOOM_OUT(0.9f),
+    m_GenDungeonSC(new QShortcut(QKeySequence(Qt::Key_Return), this))
 {
     ui.setupUi(this);
     InitGraphicsScene();
@@ -53,6 +56,8 @@ void DungeonGenerator::InitConnections()
     connect(ui.pushButton_New, &QPushButton::clicked, this, &DungeonGenerator::OnBtnNewClicked);
     connect(ui.pushButton_zoomIn, &QPushButton::clicked, this, &DungeonGenerator::OnBtnZoomIn);
     connect(ui.pushButton_zoomOut, &QPushButton::clicked, this, &DungeonGenerator::OnBtnZoomOut);
+    connect(ui.pushButton_Dungeon, &QPushButton::clicked, this, &DungeonGenerator::OnBtnDungeonGenerate);
+    connect(m_GenDungeonSC, &QShortcut::activated, this, &DungeonGenerator::OnBtnDungeonGenerate);
 
     // Actions
     connect(m_ActGenSnake, &QAction::triggered, this, [=] { GenMazeSnake(); });
@@ -259,6 +264,66 @@ int DungeonGenerator::CheckNeighbours(uint dir, uint x, uint y)
     return walls;
 }
 
+void DungeonGenerator::GenRooms(int attempts)
+{
+    uint nx, ny;
+    uint size_x, size_y;
+    for (int i = 0; i < attempts; i++)
+    {
+        if ((qrand() % 2) == 0)
+        {
+            size_x = (qrand() % 6) + 4;
+            size_y = (qrand() % (size_x / 2)) + 4;
+        }
+        else
+        {
+            size_y = (qrand() % 6) + 4;
+            size_x = (qrand() % (size_y / 2)) + 4;            
+        }
+
+
+
+
+        nx = (qrand() % (MAX_WIDTH - size_x - 1)) + 1;
+        ny = (qrand() % (MAX_HEIGHT - size_y - 1)) + 1;
+
+        if (AreFieldsEmpty(nx, ny, size_x, size_y))
+        {
+            TakeFields(nx, ny, size_x, size_y);
+        }
+    }
+}
+
+bool DungeonGenerator::AreFieldsEmpty(uint x, uint y, uint size_x, uint size_y)
+{
+    uint nx = x - 1;
+    uint ny = y - 1;
+    uint size_nx = size_x + 2;
+    uint size_ny = size_y + 2;
+
+    for (int i = 0; i < size_nx; i++)
+    {
+        for (int j = 0; j < size_ny; j++)
+        {
+            if (m_MazeArr[nx + i][ny + j] == 1)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+void DungeonGenerator::TakeFields(uint x, uint y, uint size_x, uint size_y)
+{
+    for (int i = 0; i < size_x; i++)
+    {
+        for (int j = 0; j < size_y; j++)
+        {
+            m_MazeArr[x + i][y + j] = 1;
+        }
+    }
+}
+
 // Events
 //////////////////////////////////////////////////////////////////////////
 bool DungeonGenerator::eventFilter(QObject *watched, QEvent *event)
@@ -304,4 +369,18 @@ void DungeonGenerator::OnBtnZoomIn()
 void DungeonGenerator::OnBtnZoomOut()
 {
     ui.graphicsView->scale(SCALE_ZOOM_OUT, SCALE_ZOOM_OUT);
+}
+
+void DungeonGenerator::OnBtnDungeonGenerate()
+{
+    bool result = false;
+    int seed = QInputDialog::getInt(this, tr("Question?"), tr("How many attempts?"), 50, 1, 2147483647, 1, &result);
+
+    if (result)
+    {
+        ClearMazeArray();
+        GenRooms(seed);
+        GenMazeRecursiveBacktracking(10, 10);
+        DrawMazeFromArray();
+    }
 }

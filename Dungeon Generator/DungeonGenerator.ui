@@ -118,6 +118,23 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_Dungeon">
+        <property name="toolTip">
+         <string>Generate Dungeon!</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="DungeonGenerator.qrc">
+          <normaloff>:/DungeonGenerator/Resources/dungeon.png</normaloff>:/DungeonGenerator/Resources/dungeon.png</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>

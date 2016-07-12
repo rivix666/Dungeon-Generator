@@ -35,6 +35,7 @@ public:
     QPushButton *pushButton_zoomOut;
     QPushButton *pushButton_zoomIn;
     QPushButton *pushButton_New;
+    QPushButton *pushButton_Dungeon;
 
     void setupUi(QMainWindow *DungeonGeneratorClass)
     {
@@ -89,6 +90,15 @@ public:
 
         horizontalLayout->addWidget(pushButton_New);
 
+        pushButton_Dungeon = new QPushButton(centralWidget);
+        pushButton_Dungeon->setObjectName(QStringLiteral("pushButton_Dungeon"));
+        QIcon icon3;
+        icon3.addFile(QStringLiteral(":/DungeonGenerator/Resources/dungeon.png"), QSize(), QIcon::Normal, QIcon::Off);
+        pushButton_Dungeon->setIcon(icon3);
+        pushButton_Dungeon->setFlat(true);
+
+        horizontalLayout->addWidget(pushButton_Dungeon);
+
 
         verticalLayout->addLayout(horizontalLayout);
 
@@ -116,6 +126,10 @@ public:
         pushButton_New->setToolTip(QApplication::translate("DungeonGeneratorClass", "Generate Maze", 0));
 #endif // QT_NO_TOOLTIP
         pushButton_New->setText(QString());
+#ifndef QT_NO_TOOLTIP
+        pushButton_Dungeon->setToolTip(QApplication::translate("DungeonGeneratorClass", "Generate Dungeon!", 0));
+#endif // QT_NO_TOOLTIP
+        pushButton_Dungeon->setText(QString());
     } // retranslateUi
 
 };

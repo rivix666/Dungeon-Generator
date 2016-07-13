@@ -112,6 +112,7 @@ void DungeonGenerator::InitDebugCombo()
     ui.comboBox_debug->addItem("SolidRock");
     ui.comboBox_debug->addItem("Room");
     ui.comboBox_debug->addItem("Corridor");
+    ui.comboBox_debug->addItem("Doors");
 }
 
 // Others
@@ -408,47 +409,49 @@ void DungeonGenerator::ConnectRooms(int root /*= -1*/)
         root = qrand() % m_RoomsVec.size();
 
     SRoom root_room = m_RoomsVec[root];
-//     QRect rect(root_room.PosX * TILE_SIZE, root_room.PosY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-//     m_Scene->addRect(rect, TILE_BORDERS, QBrush(QColor(Qt::red)));
 
+    for (SRoom r : m_RoomsVec)
+        ConnectRoom(r);
 
+}
+
+void DungeonGenerator::ConnectRoom(SRoom room)
+{
     while (true)
     {
-        uint nx = 0;//qrand() % root_room.SizeX;
-        uint ny = 0;//qrand() % root_room.SizeY;
-        //nx = root_room.PosX + nx;
-        //ny = root_room.PosX + nx;
-
+        uint nx = 0;
+        uint ny = 0;
+                                     
         if ((qrand() % 2) == 0)
         {
             // go horizontal
             if ((qrand() % 2) == 0)
             {
                 // ceil
-                nx = (qrand() % root_room.SizeX) + root_room.PosX - 1;
-                ny = root_room.PosY - 1;
+                nx = (qrand() % room.SizeX) + room.PosX;
+                ny = room.PosY - 1;
 
                 if (nx < 2 || nx > m_MaxWidth - 2 || ny < 2 || ny > m_MaxHeight - 2)
                     continue;
 
                 if (CheckNeighbours(nx, ny) < 3)
                 {
-                    m_MazeArr[nx][ny] = Corridor;
+                    m_MazeArr[nx][ny] = Doors;
                     break;
-                }               
+                }
             }
             else
             {
                 // floor
-                nx = (qrand() % root_room.SizeX) + root_room.PosX - 1;
-                ny = root_room.PosY + root_room.SizeY;
+                nx = (qrand() % room.SizeX) + room.PosX;
+                ny = room.PosY + room.SizeY;
 
                 if (nx < 2 || nx > m_MaxWidth - 2 || ny < 2 || ny > m_MaxHeight - 2)
                     continue;
 
                 if (CheckNeighbours(nx, ny) < 3)
                 {
-                    m_MazeArr[nx][ny] = Corridor;
+                    m_MazeArr[nx][ny] = Doors;
                     break;
                 }
             }
@@ -459,35 +462,77 @@ void DungeonGenerator::ConnectRooms(int root /*= -1*/)
             if ((qrand() % 2) == 0)
             {
                 // left
-                nx = root_room.PosX - 1;
-                ny = (qrand() % root_room.SizeY) + root_room.PosY - 1;
+                nx = room.PosX - 1;
+                ny = (qrand() % room.SizeY) + room.PosY;
 
                 if (nx < 2 || nx > m_MaxWidth - 2 || ny < 2 || ny > m_MaxHeight - 2)
                     continue;
 
                 if (CheckNeighbours(nx, ny) < 3)
                 {
-                    m_MazeArr[nx][ny] = Corridor;
+                    m_MazeArr[nx][ny] = Doors;
                     break;
-                }             
+                }
             }
             else
             {
                 // right
-                nx = root_room.PosX + root_room.SizeX;
-                ny = (qrand() % root_room.SizeY) + root_room.PosY;
+                nx = room.PosX + room.SizeX;
+                ny = (qrand() % room.SizeY) + room.PosY;
 
                 if (nx < 2 || nx > m_MaxWidth - 2 || ny < 2 || ny > m_MaxHeight - 2)
                     continue;
 
                 if (CheckNeighbours(nx, ny) < 3)
                 {
-                    m_MazeArr[nx][ny] = Corridor;
+                    m_MazeArr[nx][ny] = Doors;
                     break;
-                }  
+                }
             }
         }
     }
+}
+
+bool DungeonGenerator::AreAllRoomsConnectedToRoot(SRoom root, std::vector <SRoom*> unconnected) //todo
+{
+    return true;
+}
+
+void DungeonGenerator::UncarveDungeon(uint when_stop /*= -1*/)
+{
+    int w = m_MaxWidth - 1;
+    int h = m_MaxHeight - 1;
+    for (int i = 1; i < w; i++)
+    {
+        for (int j = 1; j < h; j++)
+        {
+            UncarveCorridor(i, j);
+        }
+    }
+}
+
+void DungeonGenerator::UncarveCorridor(uint x, uint y)
+{
+    uint nx = x;
+    uint ny = y;
+    while (true)
+    {
+        if (CheckNeighbours(nx, ny) < 3)
+            return;
+
+        m_MazeArr[nx][ny] = SolidRock;
+        if (!NextTileInCorridor(nx, ny))
+            return;
+    }
+}
+
+bool DungeonGenerator::NextTileInCorridor(uint& nx, uint& ny)
+{
+    if (m_MazeArr[nx + 1][ny] != SolidRock) { nx++; return true; }
+    if (m_MazeArr[nx - 1][ny] != SolidRock) { nx--; return true; }
+    if (m_MazeArr[nx][ny + 1] != SolidRock) { ny++; return true; }
+    if (m_MazeArr[nx][ny - 1] != SolidRock) { ny--; return true; }
+    return false;
 }
 
 // Events
@@ -548,8 +593,9 @@ void DungeonGenerator::OnBtnDungeonGenerate()
         GenRooms(seed);
         CarveCorridorsBetweenRooms(0);
         ConnectRooms();
-        DrawMazeFromArray(!ui.checkBox_debug->isChecked());
-        DrawDebug(ui.comboBox_debug->currentIndex());
+        UncarveDungeon();
+        DrawMazeFromArray();
+        DrawDebug(ui.comboBox_debug->currentIndex() - 1);
     }
 }
 

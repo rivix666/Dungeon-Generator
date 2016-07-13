@@ -24,6 +24,7 @@ private:
         SolidRock = 0,
         Room,
         Corridor,
+        Doors
     };
 
     struct SRoom
@@ -37,6 +38,11 @@ private:
         SRoom(uint x, uint y, uint size_x, uint size_y) :
             PosX(x), PosY(y), SizeX(size_x), SizeY(size_y) {}
         ~SRoom() {}
+    };
+
+    struct SRegion
+    {
+        std::vector <SRoom*> Rooms;
     };
 
 public:
@@ -77,6 +83,7 @@ private:
     uint                        m_DirOppositeArr[9];
 
     std::vector <SRoom>         m_RoomsVec;
+    std::vector <SRegion>       m_RegionsVec;
 
     uint                        m_MaxWidth;
     uint                        m_MaxHeight;
@@ -100,6 +107,11 @@ private:
     void                        CarveRoom(uint x, uint y, uint size_x, uint size_y);
     void                        CarveCorridorsBetweenRooms(uint attempts = 0); // with attempts == 0, slow but check every possibility, with attempts > 0 faster but may result with empty spaces
     void                        ConnectRooms(int root = -1); // -1 mean that it will be randomly draw from m_RoomsVec
+    void                        ConnectRoom(SRoom room);
+    bool                        AreAllRoomsConnectedToRoot(SRoom root, std::vector <SRoom*> unconnected); // if false 'unconnected' will be filled with romms that are not connected to root
+    void                        UncarveDungeon(uint when_stop = -1); // if when_stop == -1 the uncarve to perfect dungeon
+    void                        UncarveCorridor(uint x, uint y);
+    bool                        NextTileInCorridor(uint& nx, uint& ny); // false == end of corridor
 
 private slots:
 

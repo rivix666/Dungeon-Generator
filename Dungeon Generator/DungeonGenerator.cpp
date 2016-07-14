@@ -7,6 +7,7 @@
 #include <QKeyEvent>
 #include <QInputDialog>
 #include <QShortcut>
+#include <QPoint>
 
 DungeonGenerator::DungeonGenerator(QWidget *parent)
     : QMainWindow(parent), m_MaxWidth(50),
@@ -108,11 +109,12 @@ void DungeonGenerator::InitDirectionArrays()
 
 void DungeonGenerator::InitDebugCombo()
 {
-    ui.comboBox_debug->addItem("Nothing");
     ui.comboBox_debug->addItem("SolidRock");
     ui.comboBox_debug->addItem("Room");
     ui.comboBox_debug->addItem("Corridor");
     ui.comboBox_debug->addItem("Doors");
+    ui.comboBox_debug->addItem("Nothing");
+    ui.comboBox_debug->setCurrentIndex((int)Nothing);
 }
 
 // Others
@@ -498,24 +500,30 @@ bool DungeonGenerator::AreAllRoomsConnectedToRoot(SRoom root, std::vector <SRoom
     return true;
 }
 
-void DungeonGenerator::UncarveDungeon(uint when_stop /*= -1*/)
+void DungeonGenerator::UncarveDungeon(int when_stop /*= -1*/)
 {
     int w = m_MaxWidth - 1;
     int h = m_MaxHeight - 1;
+    std::vector <QPoint> corridors;
     for (int i = 1; i < w; i++)
     {
         for (int j = 1; j < h; j++)
         {
-            UncarveCorridor(i, j);
+            corridors.push_back(QPoint(i, j));
         }
+    }
+
+    for (QPoint p : corridors)
+    {
+        UncarveCorridor(p.x(), p.y(), when_stop);
     }
 }
 
-void DungeonGenerator::UncarveCorridor(uint x, uint y)
+void DungeonGenerator::UncarveCorridor(uint x, uint y, int when_stop)
 {
     uint nx = x;
     uint ny = y;
-    while (true)
+    for(int i = 0; i != when_stop; i++)
     {
         if (CheckNeighbours(nx, ny) < 3)
             return;
@@ -593,9 +601,9 @@ void DungeonGenerator::OnBtnDungeonGenerate()
         GenRooms(seed);
         CarveCorridorsBetweenRooms(0);
         ConnectRooms();
-        UncarveDungeon();
+        UncarveDungeon(20);
         DrawMazeFromArray();
-        DrawDebug(ui.comboBox_debug->currentIndex() - 1);
+        DrawDebug(ui.comboBox_debug->currentIndex());
     }
 }
 
@@ -603,7 +611,7 @@ void DungeonGenerator::OnDebugCheckBoxToggled(bool toggled)
 {
     if (toggled && ui.comboBox_debug->currentIndex() != 0)
     {
-        DrawDebug(ui.comboBox_debug->currentIndex() - 1);
+        DrawDebug(ui.comboBox_debug->currentIndex());
     }
     else
     {

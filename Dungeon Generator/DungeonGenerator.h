@@ -24,7 +24,8 @@ private:
         SolidRock = 0,
         Room,
         Corridor,
-        Doors
+        Doors,
+        Nothing
     };
 
     struct SRoom
@@ -109,8 +110,8 @@ private:
     void                        ConnectRooms(int root = -1); // -1 mean that it will be randomly draw from m_RoomsVec
     void                        ConnectRoom(SRoom room);
     bool                        AreAllRoomsConnectedToRoot(SRoom root, std::vector <SRoom*> unconnected); // if false 'unconnected' will be filled with romms that are not connected to root
-    void                        UncarveDungeon(uint when_stop = -1); // if when_stop == -1 the uncarve to perfect dungeon
-    void                        UncarveCorridor(uint x, uint y);
+    void                        UncarveDungeon(int when_stop = -1); // if when_stop == -1 the uncarve to perfect dungeon
+    void                        UncarveCorridor(uint x, uint y, int when_stop);
     bool                        NextTileInCorridor(uint& nx, uint& ny); // false == end of corridor
 
 private slots:

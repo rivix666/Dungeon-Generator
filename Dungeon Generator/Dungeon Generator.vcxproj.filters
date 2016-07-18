@@ -50,6 +50,9 @@
     <ClCompile Include="GeneratedFiles\qrc_DungeonGenerator.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="AStarPathFind.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DungeonGenerator.h">
@@ -67,6 +70,12 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AStarPathFind.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

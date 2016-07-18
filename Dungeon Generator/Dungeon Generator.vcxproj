@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AStarPathFind.cpp" />
     <ClCompile Include="DungeonGenerator.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_DungeonGenerator.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -199,7 +200,9 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AStarPathFind.h" />
     <ClInclude Include="GeneratedFiles\ui_DungeonGenerator.h" />
+    <ClInclude Include="Misc.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

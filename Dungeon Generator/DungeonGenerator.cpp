@@ -8,6 +8,7 @@
 #include <QInputDialog>
 #include <QShortcut>
 #include <QPoint>
+#include <QMessageBox>
 
 DungeonGenerator::DungeonGenerator(QWidget *parent)
     : QMainWindow(parent), m_MaxWidth(50),
@@ -375,7 +376,7 @@ void DungeonGenerator::CarveRoom(uint x, uint y, uint size_x, uint size_y)
         }
     }
 
-    m_RoomsVec.push_back(SRoom(x, y, size_x, size_y)); //todo obadac czemu miesza
+    m_RoomsVec.push_back(SRoom(x, y, size_x, size_y));
 }
 
 void DungeonGenerator::CarveCorridorsBetweenRooms(uint attempts)
@@ -439,6 +440,7 @@ void DungeonGenerator::ConnectRoom(SRoom room)
                 if (CheckNeighbours(nx, ny) < 3)
                 {
                     m_MazeArr[nx][ny] = Doors;
+                    room.RoomDoors.push_back(SPoint(nx, ny));
                     break;
                 }
             }
@@ -495,27 +497,22 @@ void DungeonGenerator::ConnectRoom(SRoom room)
     }
 }
 
-bool DungeonGenerator::AreAllRoomsConnectedToRoot(SRoom root, std::vector <SRoom*> unconnected) //todo
-{
-    return true;
-}
-
 void DungeonGenerator::UncarveDungeon(int when_stop /*= -1*/)
 {
     int w = m_MaxWidth - 1;
     int h = m_MaxHeight - 1;
-    std::vector <QPoint> corridors;
+    std::vector <SPoint> corridors;
     for (int i = 1; i < w; i++)
     {
         for (int j = 1; j < h; j++)
         {
-            corridors.push_back(QPoint(i, j));
+            corridors.push_back(SPoint(i, j));
         }
     }
 
-    for (QPoint p : corridors)
+    for (SPoint p : corridors)
     {
-        UncarveCorridor(p.x(), p.y(), when_stop);
+        UncarveCorridor(p.X, p.Y, when_stop);
     }
 }
 
@@ -602,6 +599,11 @@ void DungeonGenerator::OnBtnDungeonGenerate()
         CarveCorridorsBetweenRooms(0);
         ConnectRooms();
         UncarveDungeon(20);
+
+        std::vector <SRoom*> ahmed;
+        AreAllRoomsConnectedToRoot(m_RoomsVec[0], ahmed);
+        QMessageBox::information(this, tr("ss"), QString::number(ahmed.size()));
+
         DrawMazeFromArray();
         DrawDebug(ui.comboBox_debug->currentIndex());
     }
@@ -641,4 +643,129 @@ void DungeonGenerator::OnSpinBoxesSizeValueChanged(int i)
 
     InitMazeArray();
     m_Scene->clear();
+}
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+
+bool DungeonGenerator::AreAllRoomsConnectedToRoot(SRoom root, std::vector <SRoom*>& unconnected) //todo
+{
+    uint g = 10;
+
+    if (root.RoomDoors.size() < 1)
+        return false;
+
+    m_StartPos = root.RoomDoors[0];
+    for (SRoom room : m_RoomsVec)
+    {
+        if (root == room)
+            continue;
+
+        if (room.RoomDoors.size() < 1)
+        {
+            unconnected.push_back(&room);
+            continue;
+        }
+
+        g = 10;
+        m_StartPos = room.RoomDoors[0];
+        SPoint pt = m_StartPos;
+        while (true)
+        {
+            std::vector <SWeight> open_paths;
+            CheckAStarOpenPaths(pt, g, open_paths);
+            if (AreDoorsNearby(pt))
+                continue;
+            SWeight w = open_paths[0];
+            for (int i = 1; i < open_paths.size(); i++)
+            {
+                if (w.Weight > open_paths[i].Weight)
+                    w = open_paths[i];
+            }
+            pt = w.Pos;
+            g += 10;
+        }
+
+    }
+
+    return true;
+}
+
+void DungeonGenerator::CheckAStarOpenPaths(const SPoint& pt, const uint& g_point, std::vector <SWeight>& out)
+{
+    uint nx, ny;
+    nx = pt.X + 1; ny = pt.Y;
+    if (m_MazeArr[nx][ny] == Corridor)
+    {
+        SPoint pt2(nx, ny);
+        out.push_back(SWeight(pt2, CalcAStarWeight(pt2, g_point), g_point));
+    }
+
+    nx = pt.X - 1;
+    if (m_MazeArr[nx][ny] == Corridor)
+    {
+        SPoint pt2(nx, ny);
+        out.push_back(SWeight(pt2, CalcAStarWeight(pt2, g_point), g_point));
+    }
+
+    nx = pt.X; ny = pt.Y + 1;
+    if (m_MazeArr[nx][ny] == Corridor)
+    {
+        SPoint pt2(nx, ny);
+        out.push_back(SWeight(pt2, CalcAStarWeight(pt2, g_point), g_point));
+    }
+
+    ny = pt.Y - 1;
+    if (m_MazeArr[nx][ny] == Corridor)
+    {
+        SPoint pt2(nx, ny);
+        out.push_back(SWeight(pt2, CalcAStarWeight(pt2, g_point), g_point));
+    }
+}
+
+bool DungeonGenerator::AreDoorsNearby(SPoint& pt)
+{
+    uint nx, ny;
+    nx = pt.X + 1; ny = pt.Y;
+    if (m_MazeArr[nx][ny] == Doors)
+    {
+        pt.X = nx;
+        pt.Y = ny;
+        return true;
+    }
+
+    nx = pt.X - 1;
+    if (m_MazeArr[nx][ny] == Doors)
+    {
+        pt.X = nx;
+        pt.Y = ny;
+        return true;
+    }
+
+    nx = pt.X; ny = pt.Y + 1;
+    if (m_MazeArr[nx][ny] == Doors)
+    {
+        pt.X = nx;
+        pt.Y = ny;
+        return true;
+    }
+
+    ny = pt.Y - 1;
+    if (m_MazeArr[nx][ny] == Doors)
+    {
+        pt.X = nx;
+        pt.Y = ny;
+        return true;
+    }
+
+    return false;
+}
+
+uint DungeonGenerator::CalcAStarWeight(const SPoint& pt, const uint& g_weight)
+{
+    uint weight = g_weight + std::abs(((int)pt.X - (int)m_EndPos.X)) + std::abs(((int)pt.Y) - ((int)m_EndPos.Y));
+    return weight;
 }

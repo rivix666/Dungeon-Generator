@@ -1,57 +1,16 @@
 #pragma once
 #include <QtWidgets/QMainWindow>
 #include "ui_DungeonGenerator.h"
+#include "AStarPathFind.h"
+#include "Misc.h"
 #include <QGraphicsScene>
 #include <QTime>
 #include <vector>
 
-typedef unsigned int uint;
-
 class DungeonGenerator : public QMainWindow
 {
     Q_OBJECT
-private:
-    enum EDirections
-    {
-        N = 1,
-        S = 2,
-        E = 4,
-        W = 8
-    };
-
-    enum ETileType
-    {
-        SolidRock = 0,
-        Room,
-        Corridor,
-        Doors,
-        Nothing
-    };
-
-    struct SRoom
-    {
-        uint PosX;
-        uint PosY;
-        uint SizeX;
-        uint SizeY;
-
-        SRoom() : PosX(0), PosY(0), SizeX(0), SizeY(0) {}
-        SRoom(uint x, uint y, uint size_x, uint size_y) :
-            PosX(x), PosY(y), SizeX(size_x), SizeY(size_y) {}
-        ~SRoom() {}
-    };
-
-    struct SRegion
-    {
-        std::vector <SRoom*> Rooms;
-    };
-
 public:
-
-    /*
-        TODO: Zobaczyæ co jest nie tak ze wspolrzednymi bo dziwnie dzialaja raz tak raz tak, mozliwe ze sa pomieszane gdzies.
-    */
-
     DungeonGenerator(QWidget *parent = 0);
     ~DungeonGenerator();
 
@@ -109,7 +68,6 @@ private:
     void                        CarveCorridorsBetweenRooms(uint attempts = 0); // with attempts == 0, slow but check every possibility, with attempts > 0 faster but may result with empty spaces
     void                        ConnectRooms(int root = -1); // -1 mean that it will be randomly draw from m_RoomsVec
     void                        ConnectRoom(SRoom room);
-    bool                        AreAllRoomsConnectedToRoot(SRoom root, std::vector <SRoom*> unconnected); // if false 'unconnected' will be filled with romms that are not connected to root
     void                        UncarveDungeon(int when_stop = -1); // if when_stop == -1 the uncarve to perfect dungeon
     void                        UncarveCorridor(uint x, uint y, int when_stop);
     bool                        NextTileInCorridor(uint& nx, uint& ny); // false == end of corridor
@@ -131,4 +89,15 @@ private slots:
     // SpinBoxes
     void                        OnSpinBoxesSizeValueChanged(int i);
 
+
+
+private:
+
+    SPoint                      m_StartPos;
+    SPoint                      m_EndPos;
+
+    bool                        AreAllRoomsConnectedToRoot(SRoom root, std::vector <SRoom*>& unconnected); // if false 'unconnected' will be filled with romms that are not connected to root
+    void                        CheckAStarOpenPaths(const SPoint& pt, const uint& g_weight, std::vector <SWeight>& out);
+    bool                        AreDoorsNearby(SPoint& pt);
+    uint                        CalcAStarWeight(const SPoint& pt, const uint& g_weight);
 };
